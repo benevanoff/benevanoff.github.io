@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<script src='d3.v5.min.js'></script>
+<style> circle {fill: lightblue; stroke: black;} </style>
+<body>
+<h2>CO2 emissions (metric tons per capita) as a function of GDP per capita (current US Dollars)</h2>
+<h3 id="year-label">Year: 1990</h3>
+<p id="world-emissions">World CO2 Emissions: </p>
+<p id="world-gdp">World GDP: </p>
+<div id="plot"></div>
+<div id="btn_container">
+  <button id="back_btn">Back</button>
+  <button id="forward_btn">Forward</button>
+</div>
+<p id="message">The plot begins fairly dense with a strong positive correlation with only a handful of outliers in Europe</p>
+
+<div id="details-div" style="visibility:hidden;height:wrap-content;width:wrap-content;border:1px solid #fea50a;">
+  <p id="name-details">Name</p>
+  <p id="co2-details">CO2</p>
+  <p id="gdp-details">GDP</p>
+</div>
+<script>
+async function fetchData() {
+  // load co2 emission data
+  co2_dats = {};
+  await d3.csv("wb_co2.csv", function(entry) {
+    co2_dats[entry["Country Name"]] = entry; // [0] is for 1960, [30] for 1990, and [59] for 2019. [60] is for country name
+  });
+
+  let gdp_dats = {};
+  await d3.csv("wb_gdp.csv", function(entry) {
+    gdp_dats[entry["Country Name"]] = entry;
+  });
+
+  let continents_data = {};
+  await d3.csv("countryContinent.csv", function(entry) {
+    continents_data[entry.code_3] = entry.continent;
+  });
+
+  // join co2 gdp on country name
+  let joined = [];
+  Object.entries(co2_dats).forEach(e => {
+    if (gdp_dats.hasOwnProperty(e[0])) {
+      let code = e[1]["Country Code"];
+      let continent = continents_data[code];
+      if (typeof(continent) == "undefined" && e[1]["Country Name"] != "World") return;
+      console.log(continent);
+      joined.push( {"country" : e[0], "co2" : e[1], "gdp" : gdp_dats[e[0]], "continent": continent} );
+    }
+  });
+  return joined;
+}
+
+function filterByYear(data, year) {
+  i = year - 1960;
+  res = [];
+  Object.entries(data).forEach(country => {
+    if (country[1].co2[year] == "" || country[1].gdp[year] == "")
+      return;
+    res.push([ country[1].country, parseFloat(country[1].gdp[year]), parseFloat(country[1].co2[year]), country[1].continent ]);
+  });
+  return res;
+}
+
+function drawGraph(data) {
+  let margin = {top: 10, right: 30, bottom: 40, left: 60},
+    width = 460 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+  let svg = d3.select("#plot")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+  let x = d3.scaleLinear()
+    .domain([0, 200000])
+    .range([ 0, width ]);
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x));
+
+  let y = d3.scaleLinear()
+    .domain([0, 80])
+    .range([ height, 0]);
+  svg.append("g")
+    .call(d3.axisLeft(y));
+
+
+  // axis label code taken from https://stackoverflow.com/questions/11189284/d3-axis-labeling
+  svg.append("text")
+    .attr("class", "x label")
+    .attr("text-anchor", "end")
+    .attr("x", width)
+    .attr("y", height + 35)
+    .text("GDP per capita (current USD)");
+
+  svg.append("text")
+    .attr("class", "y label")
+    .attr("text-anchor", "end")
+    .attr("y", -40)
+    .attr("dy", ".75em")
+    .attr("transform", "rotate(-90)")
+    .text("CO2 emissions (metric tons per capita)");
+
+  svg.append('g')
+    .selectAll("dots")
+    .data(data)
+    .enter()
+    .append("circle")
+      .attr("id", "asd" )
+      .attr("cx", function (d) { if (d[0] == "World") { document.getElementById("world-emissions").innerHTML="World CO2 Emissions: "+d[1]; return null; } return x(d[1]); } )
+      .attr("cy", function (d) { if (d[0] == "World") { document.getElementById("world-gdp").innerHTML="World GDP: "+d[2]; return null; } return y(d[2]); } )
+      .attr("r", function (d) { if (d[0] == "World") { return 0; } else return 3; })
+      .style("fill", function (d) {
+        if (d[3] == "Africa") return "#ffa500";
+        if (d[3] == "Americas") return "#0a1cfe";
+        if (d[3] == "Europe") return "#fe0aec";
+        if (d[3] == "Asia") return "#0abf0f";
+        if (d[3] == "Oceania") return "#f7ff03"
+        else return "#ffffff"
+      })
+      .on("mouseover", function (d) {
+        document.getElementById("name-details").innerHTML = d[0];
+        document.getElementById("gdp-details").innerHTML = "GDP "+d[1];
+        document.getElementById("co2-details").innerHTML = "CO2 "+d[2];
+        let details_div = document.getElementById("details-div");
+        details_div.style.position = "absolute";
+        details_div.style.top = "270px";
+        details_div.style.left = "250px";
+        details_div.style.visibility = "visible";
+      })
+      .on("mouseout", function (d) {
+        let details_div = document.getElementById("details-div");
+        details_div.style.visibility = "hidden";
+      });
+}
+
+async  function init() {
+  var data = await fetchData();
+  let start_data = filterByYear(data, 1990);
+  drawGraph(start_data);
+  return data;
+}
+
+function advanceGraph() {
+  year = year >= 2019 ? 2019 : year+1;
+  document.getElementById("year-label").innerHTML = "Year: "+year;
+  document.getElementById("message").innerHTML = messageFromYear(year);
+  let year_data = filterByYear(d, year);
+  document.getElementById("plot").innerHTML = "";
+  drawGraph(year_data);
+}
+
+function rewindGraph() {
+  year = year <= 1990 ? 1990 : year-1;
+  document.getElementById("year-label").innerHTML = "Year: "+year;
+  document.getElementById("message").innerHTML = messageFromYear(year);
+  let year_data = filterByYear(d, year);
+  document.getElementById("plot").innerHTML = "";
+  drawGraph(year_data);
+}
+
+function messageFromYear(year) {
+  if (year < 1996) return messages[0];
+  if (year >= 1996 && year < 2007) return messages[1];
+  if (year >= 2007 && year < 2019) return messages[2];
+  else return messages[3];
+}
+
+var d;
+init().then(v => {
+  d = v;
+});
+var year = 1990;
+var messages = ["The plot begins fairly dense with a strong positive correlation with only a handful of outliers in Europe.",
+	"The correlation is still strongly positive but the spread has grown wider, especially among outliers.",
+	"Global GDP per capita has risen ~12.6% while global CO2 Emissions have doubled.",
+	"Global GDP per capita has stayed relatively stagnant since 2007 but global CO2 emissions have risen ~30.5%. The line of best fit has flattened quite a bit since 1990."];
+document.getElementById("forward_btn").addEventListener("click", advanceGraph);
+document.getElementById("back_btn").addEventListener("click", rewindGraph);
+
+
+</script>
+</body>
+</html>
