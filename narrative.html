@@ -77,7 +77,7 @@ function filterData(data, year, continents) {
   res = [];
   Object.entries(data).forEach(country => {
     console.log(country[1].continent);
-    if (country[1].co2[year] == "" || country[1].gdp[year] == "" || (continents.find((e) => e == country[1].continent) == undefined))
+    if (country[1].co2[year] == "" || country[1].gdp[year] == "" || ((continents.find((e) => e == country[1].continent) == undefined) && country[1].country != "World"))
       return;
     res.push([ country[1].country, parseFloat(country[1].gdp[year]), parseFloat(country[1].co2[year]), country[1].continent ]);
   });
