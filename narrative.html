@@ -3,6 +3,13 @@
 <script src='d3.v5.min.js'></script>
 <style> circle {fill: lightblue; stroke: black;} </style>
 <body>
+<!-- fadeIn from https://blog.hubspot.com/website/css-fade-in -->
+<style>
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+</style>
 <h2>CO2 emissions (metric tons per capita) as a function of GDP per capita (current US Dollars)</h2>
 <h3 id="year-label">Year: 1990</h3>
 <p id="world-emissions">World CO2 Emissions: </p>
@@ -142,6 +149,7 @@ function drawGraph(data) {
         else return "#ffffff"
       })
       .on("mouseover", function (d) {
+        strokeAllBlack();
         document.getElementById("name-details").innerHTML = d[0];
         document.getElementById("gdp-details").innerHTML = "GDP "+d[1];
         document.getElementById("co2-details").innerHTML = "CO2 "+d[2];
@@ -158,11 +166,18 @@ function drawGraph(data) {
 
       document.getElementById("plot").addEventListener("mousemove", () => { // give red fill to dot with x value nearest to mouse
         let dots = document.getElementsByTagName("circle");
-        let x = event.clientX - 60; // strip offset
+        let x = event.clientX;
+        let y = event.clientY;
         let closest = dots[0];
 		for (let i = 0; i < dots.length; i++) {
 		  if (dots[i].attributes.cx) {
-			if (Math.abs(dots[i].attributes.cx.nodeValue - x) < Math.abs(closest.attributes.cx.nodeValue - x)) closest = dots[i];
+			let dot_y = dots[i].getBoundingClientRect().top;
+            let dot_x = dots[i].getBoundingClientRect().left;
+            let closest_y = closest.getBoundingClientRect().top;
+            let closest_x = closest.getBoundingClientRect().left;
+            let newest = (Math.abs(dot_x - x)*Math.abs(dot_x - x)) + (Math.abs(dot_y - y)*Math.abs(dot_y - y));
+			let closer = (Math.abs(closest_x - x)*Math.abs(closest_x - x)) + (Math.abs(closest_y - y)*Math.abs(closest_y - y));
+            if (newest < closer) closest = dots[i];
 		  }
 		}
 		closest.style.stroke = "red";
@@ -170,12 +185,7 @@ function drawGraph(data) {
 		  if (dots[i] != closest) dots[i].style.stroke = "black";
 		}
       });
-      document.getElementById("plot").addEventListener("mouseleave", () => {
-		let dots = document.getElementsByTagName("circle");
-		for (let i = 0; i < dots.length; i++) {
-		  dots[i].style.stroke = "black";
-		}
-	  });
+      document.getElementById("plot").addEventListener("mouseleave", strokeAllBlack);
 }
 
 function continentsVectorFromBoxes() {
@@ -200,8 +210,23 @@ async  function init() {
   return data;
 }
 
+function strokeAllBlack() {
+  let dots = document.getElementsByTagName("circle");
+  for (let i = 0; i < dots.length; i++) {
+    dots[i].style.stroke = "black";
+  }
+}
+
 function advanceGraph() {
   year = year >= 2019 ? 2019 : year+1;
+  if (year == 2007) {
+    document.getElementById("world-emissions").style.color = "#b20606";
+    document.getElementById("world-emissions").style.animation = "fadeIn 0.7s";
+  }
+  else {
+    document.getElementById("world-emissions").style.color = "black";
+    document.getElementById("world-emissions").style.animation = "";
+  }
   document.getElementById("year-label").innerHTML = "Year: "+year;
   document.getElementById("message").innerHTML = messageFromYear(year);
   let year_data = filterData(d, year, continentsVectorFromBoxes());
@@ -211,6 +236,14 @@ function advanceGraph() {
 
 function rewindGraph() {
   year = year <= 1990 ? 1990 : year-1;
+  if (year == 2007) {
+    document.getElementById("world-emissions").style.color = "#b20606";
+    document.getElementById("world-emissions").style.animation = "fadeIn 0.7s";
+  }
+  else {
+    document.getElementById("world-emissions").style.color = "black";
+    document.getElementById("world-emissions").style.animation = "";
+  }
   document.getElementById("year-label").innerHTML = "Year: "+year;
   document.getElementById("message").innerHTML = messageFromYear(year);
   let year_data = filterData(d, year, continentsVectorFromBoxes());
@@ -238,7 +271,7 @@ init().then(v => {
 var year = 1990;
 var messages = ["The plot begins fairly dense with a strong positive correlation with only a handful of outliers in Europe.",
 	"The correlation is still strongly positive but the spread has grown wider, especially among outliers.",
-	"Global GDP per capita has risen ~12.6% while global CO2 Emissions have doubled.",
+	"Global GDP per capita has risen ~12.6% while global CO2 Emissions have <span style=\"color:#b20606\">doubled</span>.",
 	"Global GDP per capita has stayed relatively stagnant since 2007 but global CO2 emissions have risen ~30.5%. The line of best fit has flattened quite a bit since 1990."];
 
 document.getElementById("americas-filter").addEventListener("change", reDrawPlot);
