@@ -11,23 +11,23 @@
 <div id="country-filters" style="display:flex;margin-bottom:10px;">
   <div>
     <input type="checkbox" id="americas-filter">
-    <label>Americas</label>
+    <label style="color:#0a1cfe;">Americas</label>
   </div>
   <div>
     <input type="checkbox" id="asia-filter">
-    <label>Asia</label>
+    <label style="color:#0abf0f;">Asia</label>
   </div>
   <div>
     <input type="checkbox" id="africa-filter">
-    <label>Africa</label>
+    <label style="color:#ffa500;">Africa</label>
   </div>
   <div>
     <input type="checkbox" id="europe-filter">
-    <label>Europe</label>
+    <label style="color:#fe0aec;">Europe</label>
   </div>
   <div>
     <input type="checkbox" id="oceania-filter">
-    <label>Oceania</label>
+    <label style="color:#CCCC00">Oceania</label>
   </div>
 </div>
 <div id="btn_container">
@@ -76,7 +76,6 @@ function filterData(data, year, continents) {
   i = year - 1960;
   res = [];
   Object.entries(data).forEach(country => {
-    console.log(country[1].continent);
     if (country[1].co2[year] == "" || country[1].gdp[year] == "" || ((continents.find((e) => e == country[1].continent) == undefined) && country[1].country != "World"))
       return;
     res.push([ country[1].country, parseFloat(country[1].gdp[year]), parseFloat(country[1].co2[year]), country[1].continent ]);
@@ -156,6 +155,27 @@ function drawGraph(data) {
         let details_div = document.getElementById("details-div");
         details_div.style.visibility = "hidden";
       });
+
+      document.getElementById("plot").addEventListener("mousemove", () => { // give red fill to dot with x value nearest to mouse
+        let dots = document.getElementsByTagName("circle");
+        let x = event.clientX - 60; // strip offset
+        let closest = dots[0];
+		for (let i = 0; i < dots.length; i++) {
+		  if (dots[i].attributes.cx) {
+			if (Math.abs(dots[i].attributes.cx.nodeValue - x) < Math.abs(closest.attributes.cx.nodeValue - x)) closest = dots[i];
+		  }
+		}
+		closest.style.stroke = "red";
+		for (let i = 0; i < dots.length; i++) {
+		  if (dots[i] != closest) dots[i].style.stroke = "black";
+		}
+      });
+      document.getElementById("plot").addEventListener("mouseleave", () => {
+		let dots = document.getElementsByTagName("circle");
+		for (let i = 0; i < dots.length; i++) {
+		  dots[i].style.stroke = "black";
+		}
+	  });
 }
 
 function continentsVectorFromBoxes() {
