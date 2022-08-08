@@ -1,0 +1,172 @@
+<html>
+<style>
+.tab-select {
+  margin: 20px;
+  text-decoration-line: underline;
+}
+
+.tab-select:hover {
+  text-decoration-thickness: 4px;;
+}
+
+.center-container {
+ display:flex;
+ justify-content:center;
+ align-items:center;
+}
+
+.study-field-btn {
+ border-radius: 18px;
+ padding: 10px 16px;
+ margin-left: 7px;
+ margin-right:7px;
+}
+
+.job-company {
+ margin: 0;
+}
+
+.job-dates {
+ margin: 0;
+}
+
+</style>
+
+ <body>
+   <center>
+    <img src="washington.jpg" width=30%>
+    <p>I'm Ben Evanoff, I expect to graduate from the University of Illinois at Urbana-Champaign in the Spring of 2023.</p>
+    <p>I'm interested in roles like: Computational Linguist/NLP Engineer, Software Developer, Data/Business Analyst</p>
+   </center>
+   
+   <div class="center-container">
+    <h2 class="tab-select" id="data-viz-tab">Data Viz</h2>
+    <h2 class="tab-select" id="education-tab">Education</h2>
+    <h2 class="tab-select" id="work-history-tab">Work History</h2>
+    <h2 class="tab-select" id="software-tab">Software Projects</h2>
+   </div>
+
+   <div id="content-div">
+
+   </div>
+ </body>
+
+<script>
+  var content_div = document.getElementById("content-div");
+
+  var data_viz_tab = document.getElementById("data-viz-tab");
+  data_viz_tab.addEventListener("mouseover", () => {
+    data_viz_tab.classList.add("selected-tab");
+  });
+  data_viz_tab.addEventListener("mouseout", () => {
+    data_viz_tab.classList.remove("selected-tab");
+  });
+  data_viz_tab.addEventListener("click", () => {
+    content_div.innerHTML = ' \
+    <div class="center-container"> \
+     <div style="max-width:75%;max-height:90%;" class="center-container"> \
+      <img src="covid19-mask-use.jpg" style="max-width:75%;max-height:70%;" id="covid-tableau-img"> \
+     </div> \
+     <div style="max-width:75%;max-height:70%;" class="center-container"> \
+      <img src="co2_gdp_plot.jpg" style="max-width:75%;max-height:90%;" id="co2-gdp-img"> \
+     </div> \
+    </div>';
+    let covid_tableau_btn = document.getElementById("covid-tableau-img");
+    covid_tableau_btn.addEventListener("click", () => {
+      location.href = "https://public.tableau.com/app/profile/benjamin.evanoff/viz/use-of-masks-july-2-through-14-2020/Dashboard1";
+    });
+    let co2_gdp_btn = document.getElementById("co2-gdp-img");
+    co2_gdp_btn.addEventListener("click", () => {
+      location.href = "narrative.html";
+    });
+  });
+
+  var education_tab = document.getElementById("education-tab");
+  education_tab.addEventListener("click", () => {
+    content_div.innerHTML = ' \
+    <div class="center-container"> \
+     <h4>Bachelor\'s Degree - University of Illinois at Urbana-Champaign</h4> \
+    </div> \
+    <div class="center-container"> \
+     <button class="study-field-btn" id="linguistics-major">  Major: Linguistics  </button> \
+     <button class="study-field-btn">  Minor: Computer Science  </button> \
+    </div>';
+    let linguistics_btn = document.getElementById("linguistics-major");
+  });
+
+  var work_tab = document.getElementById("work-history-tab");
+  work_tab.addEventListener("click", () => {
+    content_div.innerHTML = ' \
+   <center> \
+    <div> \
+     <h4 class="job-dates">Course Assistant</h4> \
+      <p class="job-company">University of Illinois at Urbana-Champaign Computer Science</p> \
+      <p class="job-dates">January 2022 - Present</p> \
+      <ul> \
+       <li>Helped instruct lab sessions</li> \
+       <li>Tutored students in office hours</li> \
+       <li>Fixed bugs in our online course infrastructure</li> \
+      </ul> \
+    </div> \
+    <div> \
+     <h4 class="job-dates">Data Annotator</h4> \
+     <p class="job-company">XSell Technologies</p> \
+     <p class="job-dates">August 2021 - January 2022</p> \
+     <ul> \
+      <li style="max-width:50%">Annotated gigabytes worth of company data for training of a neural network powered classifier program.</li> \
+     </ul> \
+    </div> \
+    <div> \
+     <h4 style="margin:0">Research Assistant</h4> \
+     <p class="job-company">University of Illinois at Urbana-Champaign Linguistics</p> \
+     <p class="job-dates">January 2021 - May 2021</p> \
+     <ul> \
+      <li style="max-width:50%">Segmented and annotated long audio recordings based on syntactic and pragmatic rules for the development of a machine learning algorithm for the detection of irony in natural speech</li> \
+      <li style="max-width:50%">Organized and manipulated annotation data with Python</li> \
+     </ul> \
+    </div> \
+   </center>';
+  });
+
+  var software_tab = document.getElementById("software-tab");
+  software_tab.addEventListener("click", () => {
+    content_div.innerHTML = ' \
+    <div class="center-container"> \
+     <button id="software-scoll-left"><</button> \
+     <img id="software-img" height=30% width=50%> \
+     <button id="software-scoll-right">></button> \
+    </div> \
+    <center> \
+     <h3 id="software-name"></h3> \
+     <p id="software-desc"></p> \
+    </center>';
+
+    let projects = [
+      {"name" : "Restaurant Recommender", "image" : "cs411-proj1.jpg", "description" : "Users can input their eating tendencies and preferences to get restaurant/bar recommendations generated via neural collaborative filtering.<br><a>Source Code</a>"},
+      {"name" : "Simpla Vendejo", "image" : "simpla-vendejo2.jpg", "description" : 'A simple e-commerce platform for managing payments with the Monero cryptocurrency.<br><a>API Source Code</a><br><a>Frontend Source Code</a>'},
+      {"name" : "Forest Forever", "image" : "forest-forever.png", "description" : 'A 2D video game where the player must survive a forest filled with mean squirrels and a bear!<br><a href="https://github.com/benevanoff/ForestForever">Source Code</a>'}
+    ];
+    let title = document.getElementById("software-name");
+    let description = document.getElementById("software-desc");
+    let img = document.getElementById("software-img");
+    let proj_index = 0;
+    title.innerHTML = projects[proj_index].name;
+    description.innerHTML = projects[proj_index].description;
+    img.src = projects[proj_index].image;
+
+    let forward_btn = document.getElementById("software-scoll-right").addEventListener("click", () => {
+      proj_index = (proj_index+1) % projects.length
+      title.innerHTML = projects[proj_index].name;
+      description.innerHTML = projects[proj_index].description;
+      img.src = projects[proj_index].image;
+    });
+    let back_btn = document.getElementById("software-scoll-left").addEventListener("click", () => {
+      proj_index = (proj_index-1) % projects.length;
+      let abs_idx = Math.abs(proj_index);
+      title.innerHTML = projects[abs_idx].name;
+      description.innerHTML = projects[abs_idx].description;
+      img.src = projects[abs_idx].image;
+    });
+  });
+</script>
+</html>
